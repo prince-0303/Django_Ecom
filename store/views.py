@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect
 from .models import Product
 from django.contrib.auth import authenticate, login, logout  #inbuilt authenticate library
 from django.contrib import messages  # this is used to show some sort of messages during login, logout etc....
+from .forms import SignUpForm
+
+
 
 # Create your views here.
 
@@ -31,3 +34,22 @@ def user_logout(request):
     logout(request)
     messages.success(request, ('You have logged out... Thanks for stopping by......'))
     return redirect('home')
+
+def user_register(request):
+    form = SignUpForm()
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password1']
+            user = authenticate(request, username=username, password=password)
+            login(request, user)
+            messages.success(request, ("You have registered successfuly..."))
+            return redirect('home')
+        else:
+            print(form.errors)
+            messages.error(request, ("There was a problem while registering, please try again..."))
+            # return redirect('register')
+
+    return render(request, 'register.html', {'form':form})
